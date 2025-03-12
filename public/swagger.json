@@ -1,0 +1,2873 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "School Management System API",
+    "version": "1.0.0",
+    "description": "API documentation for the School Management System"
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "API Server"
+    }
+  ],
+  "paths": {
+    "/academic/{id}": {
+      "get": {
+        "summary": "Get an academic record by ID",
+        "description": "Retrieve a single academic record by its ID",
+        "tags": [
+          "Academic Records"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with academic record details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AcademicRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an academic record",
+        "description": "Update an academic record's information by its ID",
+        "tags": [
+          "Academic Records"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcademicRecordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Academic record updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic record updated successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AcademicRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an academic record",
+        "description": "Delete an academic record by its ID",
+        "tags": [
+          "Academic Records"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Academic record deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic record deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/academic": {
+      "get": {
+        "summary": "Get all academic records",
+        "description": "Retrieve a list of all academic records with optional filtering, sorting, pagination, and search capabilities",
+        "tags": [
+          "Academic Records"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sortParam"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/pageParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchParam"
+          },
+          {
+            "in": "query",
+            "name": "studentId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by student ID"
+          },
+          {
+            "in": "query",
+            "name": "courseId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by course ID"
+          },
+          {
+            "in": "query",
+            "name": "grade[gte]",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Filter by grade greater than or equal to value"
+          },
+          {
+            "in": "query",
+            "name": "grade[lte]",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Filter by grade less than or equal to value"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with list of academic records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AcademicRecord"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new academic record",
+        "description": "Create a new academic record with the provided data",
+        "tags": [
+          "Academic Records"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcademicRecordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Academic record created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Academic record created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AcademicRecord"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/attendance/{id}": {
+      "get": {
+        "summary": "Get an attendance record by ID",
+        "description": "Retrieve a single attendance record by its ID",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with attendance record details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Attendance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an attendance record",
+        "description": "Update an attendance record's information by its ID",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Attendance record updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Attendance record updated successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Attendance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an attendance record",
+        "description": "Delete an attendance record by its ID",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance record deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Attendance record deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/attendance": {
+      "get": {
+        "summary": "Get all attendance records",
+        "description": "Retrieve a list of all attendance records with optional filtering, sorting, pagination, and search capabilities",
+        "tags": [
+          "Attendance"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sortParam"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/pageParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "in": "query",
+            "name": "studentId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by student ID"
+          },
+          {
+            "in": "query",
+            "name": "courseId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by course ID"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "present",
+                "absent",
+                "late",
+                "excused"
+              ]
+            },
+            "description": "Filter by attendance status"
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter by specific date (YYYY-MM-DD)"
+          },
+          {
+            "in": "query",
+            "name": "date[gte]",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter by date greater than or equal to (YYYY-MM-DD)"
+          },
+          {
+            "in": "query",
+            "name": "date[lte]",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter by date less than or equal to (YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with list of attendance records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Attendance"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new attendance record",
+        "description": "Create a new attendance record with the provided data",
+        "tags": [
+          "Attendance"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Attendance record created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Attendance record created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Attendance"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/course/{id}": {
+      "get": {
+        "summary": "Get a course by ID",
+        "description": "Retrieve a single course by its ID",
+        "tags": [
+          "Courses"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with course details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Course"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a course",
+        "description": "Update a course's information by its ID",
+        "tags": [
+          "Courses"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Course updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Course updated successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Course"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a course",
+        "description": "Delete a course by its ID",
+        "tags": [
+          "Courses"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Course deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/course": {
+      "get": {
+        "summary": "Get all courses",
+        "description": "Retrieve a list of all courses with optional filtering, sorting, pagination, and search capabilities",
+        "tags": [
+          "Courses"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sortParam"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/pageParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchParam"
+          },
+          {
+            "in": "query",
+            "name": "credits",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Filter by credits"
+          },
+          {
+            "in": "query",
+            "name": "dayOfWeek",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ]
+            },
+            "description": "Filter by day of week"
+          },
+          {
+            "in": "query",
+            "name": "programIds",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by program ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with list of courses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Course"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new course",
+        "description": "Create a new course with the provided data",
+        "tags": [
+          "Courses"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Course created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Course created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Course"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/department/{id}": {
+      "get": {
+        "summary": "Get a department by ID",
+        "description": "Retrieve a single department by its ID",
+        "tags": [
+          "Departments"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with department details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Department"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a department",
+        "description": "Update a department's information by its ID",
+        "tags": [
+          "Departments"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Department ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepartmentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Department updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Department updated successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Department"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a department",
+        "description": "Delete a department by its ID",
+        "tags": [
+          "Departments"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Department ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Department deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Department deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/department": {
+      "get": {
+        "summary": "Get all departments",
+        "description": "Retrieve a list of all departments with optional filtering, sorting, pagination, and search capabilities",
+        "tags": [
+          "Departments"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sortParam"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/pageParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with list of departments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Department"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new department",
+        "description": "Create a new department with the provided data",
+        "tags": [
+          "Departments"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepartmentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Department created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Department created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Department"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/program/{id}": {
+      "get": {
+        "summary": "Get a program by ID",
+        "description": "Retrieve a single program by its ID",
+        "tags": [
+          "Programs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with program details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Program"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a program",
+        "description": "Update a program's information by its ID",
+        "tags": [
+          "Programs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Program updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Program updated successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Program"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a program",
+        "description": "Delete a program by its ID",
+        "tags": [
+          "Programs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Program deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Program deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/program": {
+      "get": {
+        "summary": "Get all programs",
+        "description": "Retrieve a list of all programs with optional filtering, sorting, pagination, and search capabilities",
+        "tags": [
+          "Programs"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sortParam"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/pageParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchParam"
+          },
+          {
+            "in": "query",
+            "name": "departmentId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by department ID"
+          },
+          {
+            "in": "query",
+            "name": "degreeLevel",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "associate",
+                "bachelor",
+                "master",
+                "doctoral"
+              ]
+            },
+            "description": "Filter by degree level"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deprecated",
+                "upcoming"
+              ]
+            },
+            "description": "Filter by status"
+          },
+          {
+            "in": "query",
+            "name": "credits[gte]",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Filter by credits greater than or equal to value"
+          },
+          {
+            "in": "query",
+            "name": "credits[lte]",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Filter by credits less than or equal to value"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with list of programs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Program"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new program",
+        "description": "Create a new program with the provided data",
+        "tags": [
+          "Programs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Program created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Program created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Program"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "summary": "Get a user by ID",
+        "description": "Retrieve a single user by their ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with user details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a user",
+        "description": "Update a user's information by their ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User updated successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user",
+        "description": "Delete a user by their ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "summary": "Get all users",
+        "description": "Retrieve a list of all users with optional filtering, sorting, pagination, and search capabilities",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/sortParam"
+          },
+          {
+            "$ref": "#/components/parameters/fieldsParam"
+          },
+          {
+            "$ref": "#/components/parameters/pageParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchParam"
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "admin",
+                "teacher",
+                "student"
+              ]
+            },
+            "description": "Filter by user role"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "disabled"
+              ]
+            },
+            "description": "Filter by account status"
+          },
+          {
+            "in": "query",
+            "name": "departmentId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter students by department ID"
+          },
+          {
+            "in": "query",
+            "name": "programId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter students by program ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new user",
+        "description": "Create a new user with the provided data",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Grade": {
+        "type": "object",
+        "properties": {
+          "midterm": {
+            "type": "number",
+            "example": 85,
+            "description": "Midterm exam grade"
+          },
+          "final": {
+            "type": "number",
+            "example": 92,
+            "description": "Final exam grade"
+          },
+          "assignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Homework 1",
+                  "description": "Name of the assignment"
+                },
+                "score": {
+                  "type": "number",
+                  "example": 90,
+                  "description": "Score received for the assignment"
+                },
+                "weight": {
+                  "type": "number",
+                  "example": 20,
+                  "description": "Weight of the assignment in percentage"
+                }
+              }
+            }
+          },
+          "totalScore": {
+            "type": "number",
+            "example": 90,
+            "description": "Calculated total score"
+          },
+          "letterGrade": {
+            "type": "string",
+            "enum": [
+              "A",
+              "A-",
+              "B+",
+              "B",
+              "B-",
+              "C+",
+              "C",
+              "C-",
+              "D+",
+              "D",
+              "F"
+            ],
+            "example": "A",
+            "description": "Letter grade equivalent"
+          }
+        }
+      },
+      "AcademicRecord": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c92"
+          },
+          "studentId": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "60d21b4667d0d8992e610c89"
+              },
+              "username": {
+                "type": "string",
+                "example": "john.doe"
+              },
+              "firstName": {
+                "type": "string",
+                "example": "John"
+              },
+              "lastName": {
+                "type": "string",
+                "example": "Doe"
+              },
+              "UserId": {
+                "type": "string",
+                "example": "JD123"
+              }
+            },
+            "description": "Reference to the student"
+          },
+          "courseId": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "60d21b4667d0d8992e610c91"
+              },
+              "courseCode": {
+                "type": "string",
+                "example": "CS101"
+              },
+              "title": {
+                "type": "string",
+                "example": "Introduction to Computer Science"
+              }
+            },
+            "description": "Reference to the course"
+          },
+          "semester": {
+            "type": "string",
+            "example": "Fall",
+            "description": "Academic semester (e.g., Fall, Spring, Summer)"
+          },
+          "academicYear": {
+            "type": "string",
+            "example": "2024-2025",
+            "description": "Academic year (e.g., \"2024-2025\")"
+          },
+          "registrationStatus": {
+            "type": "string",
+            "enum": [
+              "registered",
+              "dropped",
+              "completed",
+              "failed",
+              "withdrawn"
+            ],
+            "example": "registered",
+            "description": "Current registration status for the course"
+          },
+          "grade": {
+            "type": "object",
+            "$ref": "#/components/schemas/Grade",
+            "description": "Grade information for the course"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "studentId",
+          "courseId",
+          "semester",
+          "academicYear",
+          "registrationStatus"
+        ]
+      },
+      "Attendance": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c89"
+          },
+          "studentId": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "UserId": {
+                "type": "string"
+              }
+            }
+          },
+          "courseId": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "courseCode": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-04-15"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "late",
+              "excused"
+            ],
+            "example": "present"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Student arrived 5 minutes late"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "studentId",
+          "courseId",
+          "date",
+          "status"
+        ]
+      },
+      "AttendanceInput": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c90"
+          },
+          "courseId": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c91"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-04-15"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "late",
+              "excused"
+            ],
+            "example": "present"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Student arrived 5 minutes late"
+          }
+        },
+        "required": [
+          "studentId",
+          "courseId",
+          "date",
+          "status"
+        ]
+      },
+      "Course": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c87"
+          },
+          "courseCode": {
+            "type": "string",
+            "example": "C12345678",
+            "description": "Course code (format Cxxxxxxxx where x is a digit)"
+          },
+          "title": {
+            "type": "string",
+            "example": "Introduction to Programming"
+          },
+          "description": {
+            "type": "string",
+            "example": "Basic concepts of programming using Python"
+          },
+          "credits": {
+            "type": "number",
+            "example": 3,
+            "minimum": 0,
+            "maximum": 12
+          },
+          "dayOfWeek": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ]
+            },
+            "example": [
+              "Monday",
+              "Wednesday"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "example": "09:00",
+            "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "10:30",
+            "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+          },
+          "location": {
+            "type": "string",
+            "example": "Room 101"
+          },
+          "programIds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "programCode": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of Course IDs that are prerequisites"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "courseCode",
+          "title",
+          "description",
+          "credits",
+          "dayOfWeek",
+          "startTime",
+          "endTime",
+          "location",
+          "programIds"
+        ]
+      },
+      "CourseInput": {
+        "type": "object",
+        "properties": {
+          "courseCode": {
+            "type": "string",
+            "example": "C12345678",
+            "pattern": "^C\\d{8}$"
+          },
+          "title": {
+            "type": "string",
+            "example": "Introduction to Programming"
+          },
+          "description": {
+            "type": "string",
+            "example": "Basic concepts of programming using Python"
+          },
+          "credits": {
+            "type": "number",
+            "example": 3,
+            "minimum": 0,
+            "maximum": 12
+          },
+          "dayOfWeek": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ]
+            },
+            "example": [
+              "Monday",
+              "Wednesday"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "example": "09:00",
+            "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "10:30",
+            "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+          },
+          "location": {
+            "type": "string",
+            "example": "Room 101"
+          },
+          "programIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "60d21b4667d0d8992e610c86"
+            ]
+          },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "60d21b4667d0d8992e610c88"
+            ]
+          }
+        },
+        "required": [
+          "courseCode",
+          "title",
+          "description",
+          "credits",
+          "dayOfWeek",
+          "startTime",
+          "endTime",
+          "location",
+          "programIds"
+        ]
+      },
+      "Department": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c85"
+          },
+          "code": {
+            "type": "string",
+            "example": "D12345678",
+            "description": "Department code (format Dxxxxxxxx where x is a digit)"
+          },
+          "name": {
+            "type": "string",
+            "example": "Computer Science"
+          },
+          "description": {
+            "type": "string",
+            "example": "Department of Computer Science"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "DepartmentInput": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "D12345678",
+            "pattern": "^D\\d{8}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Computer Science"
+          },
+          "description": {
+            "type": "string",
+            "example": "Department of Computer Science"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ]
+      },
+      "Program": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c86"
+          },
+          "programCode": {
+            "type": "string",
+            "example": "P12345678",
+            "description": "Program code (format Pxxxxxxxx where x is a digit)"
+          },
+          "name": {
+            "type": "string",
+            "example": "Computer Science"
+          },
+          "description": {
+            "type": "string",
+            "example": "Bachelor of Computer Science"
+          },
+          "department": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              }
+            }
+          },
+          "degreeLevel": {
+            "type": "string",
+            "enum": [
+              "associate",
+              "bachelor",
+              "master",
+              "doctoral"
+            ],
+            "example": "bachelor"
+          },
+          "credits": {
+            "type": "number",
+            "example": 120
+          },
+          "duration": {
+            "type": "number",
+            "example": 4
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "deprecated",
+              "upcoming"
+            ],
+            "example": "active"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "programCode",
+          "name",
+          "description",
+          "department",
+          "degreeLevel",
+          "credits",
+          "duration"
+        ]
+      },
+      "ProgramInput": {
+        "type": "object",
+        "properties": {
+          "programCode": {
+            "type": "string",
+            "example": "P12345678",
+            "pattern": "^P\\d{8}$"
+          },
+          "name": {
+            "type": "string",
+            "example": "Computer Science"
+          },
+          "description": {
+            "type": "string",
+            "example": "Bachelor of Computer Science"
+          },
+          "department": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c85"
+          },
+          "degreeLevel": {
+            "type": "string",
+            "enum": [
+              "associate",
+              "bachelor",
+              "master",
+              "doctoral"
+            ],
+            "example": "bachelor"
+          },
+          "credits": {
+            "type": "number",
+            "example": 120,
+            "minimum": 1
+          },
+          "duration": {
+            "type": "number",
+            "example": 4,
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "deprecated",
+              "upcoming"
+            ],
+            "example": "active"
+          }
+        },
+        "required": [
+          "programCode",
+          "name",
+          "description",
+          "department",
+          "degreeLevel",
+          "credits",
+          "duration"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c92"
+          },
+          "username": {
+            "type": "string",
+            "example": "johndoe",
+            "minLength": 3
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "teacher",
+              "student"
+            ],
+            "example": "student"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "example": "active"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "UserId": {
+            "type": "string",
+            "example": "S12345678",
+            "description": "User ID (format (A/T/S)+8digits based on role)"
+          },
+          "profileData": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TeacherProfile"
+              },
+              {
+                "$ref": "#/components/schemas/StudentProfile"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "role",
+          "status",
+          "UserId"
+        ]
+      },
+      "TeacherProfile": {
+        "type": "object",
+        "properties": {
+          "contactPhone": {
+            "type": "string",
+            "example": "+1234567890"
+          },
+          "bio": {
+            "type": "string",
+            "example": "Experienced professor in Computer Science"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "sabbatical",
+              "retired",
+              "suspended"
+            ],
+            "example": "active"
+          }
+        },
+        "required": [
+          "contactPhone",
+          "status"
+        ]
+      },
+      "StudentProfile": {
+        "type": "object",
+        "properties": {
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female",
+              "other"
+            ],
+            "example": "male"
+          },
+          "address": {
+            "type": "string",
+            "example": "123 Student Street"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+1234567890"
+          },
+          "enrollmentStatus": {
+            "type": "string",
+            "enum": [
+              "enrolled",
+              "on_leave",
+              "graduated",
+              "withdrawn"
+            ],
+            "example": "enrolled"
+          },
+          "departmentId": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c85"
+          },
+          "programId": {
+            "type": "string",
+            "example": "60d21b4667d0d8992e610c86"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          }
+        },
+        "required": [
+          "enrollmentStatus",
+          "departmentId",
+          "programId",
+          "year"
+        ]
+      },
+      "UserInput": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "johndoe",
+            "minLength": 3
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "StrongPassword123!"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "teacher",
+              "student"
+            ],
+            "example": "student"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "example": "active"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "UserId": {
+            "type": "string",
+            "example": "S12345678"
+          },
+          "profileData": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TeacherProfile"
+              },
+              {
+                "$ref": "#/components/schemas/StudentProfile"
+              }
+            ]
+          }
+        },
+        "required": [
+          "username",
+          "password",
+          "email",
+          "role",
+          "UserId",
+          "firstName",
+          "lastName",
+          "profileData"
+        ]
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 100,
+            "description": "Total number of records"
+          },
+          "page": {
+            "type": "integer",
+            "example": 1,
+            "description": "Current page number"
+          },
+          "limit": {
+            "type": "integer",
+            "example": 25,
+            "description": "Number of records per page"
+          },
+          "pages": {
+            "type": "integer",
+            "example": 4,
+            "description": "Total number of pages"
+          },
+          "hasNext": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether there is a next page"
+          },
+          "hasPrev": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether there is a previous page"
+          }
+        }
+      },
+      "FilterOperators": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "description": "Equal to"
+          },
+          "ne": {
+            "type": "string",
+            "description": "Not equal to"
+          },
+          "gt": {
+            "type": "string",
+            "description": "Greater than"
+          },
+          "gte": {
+            "type": "string",
+            "description": "Greater than or equal to"
+          },
+          "lt": {
+            "type": "string",
+            "description": "Less than"
+          },
+          "lte": {
+            "type": "string",
+            "description": "Less than or equal to"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "In array of values"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "sortParam": {
+        "in": "query",
+        "name": "sort",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Sort order (prefix field with - for descending) e.g. -createdAt,name"
+      },
+      "fieldsParam": {
+        "in": "query",
+        "name": "fields",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Fields to include (comma separated) e.g. name,code,description"
+      },
+      "pageParam": {
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "type": "integer",
+          "default": 1
+        },
+        "description": "Page number for pagination"
+      },
+      "limitParam": {
+        "in": "query",
+        "name": "limit",
+        "schema": {
+          "type": "integer",
+          "default": 25,
+          "maximum": 100
+        },
+        "description": "Number of records per page (max 100)"
+      },
+      "searchParam": {
+        "in": "query",
+        "name": "search",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Search term for full-text search"
+      },
+      "idParam": {
+        "in": "path",
+        "name": "id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Resource ID"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request - validation failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Validation failed"
+                },
+                "details": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "Name is required",
+                    "Invalid status value"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Resource not found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - authentication required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Authentication required"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden - insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "error": {
+                  "type": "string",
+                  "example": "Insufficient permissions"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}
