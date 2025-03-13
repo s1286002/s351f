@@ -35,8 +35,8 @@
  *           example: Doe
  *         UserId:
  *           type: string
- *           example: S12345678
- *           description: User ID (format (A/T/S)+8digits based on role)
+ *           example: S0001234
+ *           description: User ID (format (A/T/S)+6digits+checksum)
  *         profileData:
  *           oneOf:
  *             - $ref: '#/components/schemas/TeacherProfile'
@@ -139,7 +139,8 @@
  *           example: Doe
  *         UserId:
  *           type: string
- *           example: S12345678
+ *           example: S0001234
+ *           description: User ID (format (A/T/S)+6digits+checksum)
  *         profileData:
  *           oneOf:
  *             - $ref: '#/components/schemas/TeacherProfile'
@@ -282,7 +283,7 @@ const validateStudentProfile = (profile) => {
  * @property {Date} lastLogin - Last login timestamp
  * @property {string} firstName - First name
  * @property {string} lastName - Last name
- * @property {string} UserId - User ID (format: (A/T/S)+8digits)
+ * @property {string} UserId - User ID (format: (A/T/S)+6digits+checksum)
  * @property {Object} profileData - Role-specific profile data
  * @property {Date} createdAt - Creation timestamp
  * @property {Date} updatedAt - Last update timestamp
@@ -365,10 +366,10 @@ const userSchema = new mongoose.Schema(
             student: "S",
           };
           const prefix = prefixMap[this.role];
-          return new RegExp(`^${prefix}\\d{8}$`).test(v);
+          return new RegExp(`^${prefix}\\d{7}$`).test(v);
         },
         message: (props) =>
-          `${props.value} is not a valid User ID format! Should be (A/T/S)+8digits based on role`,
+          `${props.value} is not a valid User ID format! Should be (A/T/S)+7digits based on role (6 sequential digits + 1 checksum digit)`,
       },
     },
     profileData: {
@@ -425,15 +426,6 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.passwordHash);
 };
-
-// Create indexes
-userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ UserId: 1 }, { unique: true });
-userSchema.index({ role: 1 });
-userSchema.index({ status: 1 });
-userSchema.index({ "profileData.departmentId": 1 });
-userSchema.index({ "profileData.programId": 1 });
 
 // Add text index for search functionality
 userSchema.index(

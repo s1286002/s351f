@@ -1,118 +1,114 @@
-import { useState } from "react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "./schemas";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+/**
+ * @file LoginForm.jsx
+ * @description Main login form component for user authentication
+ */
+
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle2 } from "lucide-react";
+import FormError from "./FormError";
+import useLoginForm from "@/hooks/form/useLoginForm";
 
 /**
- * Login form component
- * @returns {JSX.Element} Login form with validation
+ * LoginForm component for user authentication
+ *
+ * @returns {JSX.Element} The LoginForm component
  */
 export default function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(loginSchema()),
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
-    },
-  });
-
-  /**
-   * Handle form submission
-   * @param {Object} data - Form data containing email and password
-   */
-  const onSubmit = async (data) => {
-    setIsLoading(true);
-
-    // Simulate a login delay
-    setTimeout(() => {
-      console.log("Login form submitted:", data);
-      setIsLoading(false);
-    }, 1000);
-
-    // Authentication logic will be implemented later
-  };
+  const { form, isLoading, error, justRegistered, onSubmit } = useLoginForm();
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
-          Sign in to your account
-        </CardTitle>
-        <CardDescription className="text-center">
-          Enter your email and password to sign in
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              {...register("email")}
-              disabled={isLoading}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              {...register("password")}
-              disabled={isLoading}
-            />
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="rememberMe" {...register("rememberMe")} />
-            <Label htmlFor="rememberMe">Remember me</Label>
-          </div>
-          <Button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign in"}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <div className="text-sm text-center">
-          Don't have an account?{" "}
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        {/* Success message after registration */}
+        {justRegistered && (
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-700">
+              Registration successful! Please log in with your User ID and
+              password.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Error message */}
+        {error && <FormError message={error} />}
+
+        {/* User ID */}
+        <FormField
+          control={form.control}
+          name="userId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>User ID</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your User ID (e.g. S0001234)"
+                  {...field}
+                />
+              </FormControl>
+              <p className="text-xs text-muted-foreground mt-1">
+                Your User ID was provided during registration (format: letter +
+                7 digits)
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Password */}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Submit Button */}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Logging in...
+            </>
+          ) : (
+            "Login"
+          )}
+        </Button>
+
+        {/* Register Link */}
+        <div className="text-center text-sm">
+          Don&apos;t have an account?{" "}
           <Link
             href="/auth/register"
-            className="text-blue-600 hover:text-blue-500"
+            className="text-primary font-semibold hover:underline"
           >
-            Sign up
+            Register
           </Link>
         </div>
-      </CardFooter>
-    </Card>
+      </form>
+    </Form>
   );
 }

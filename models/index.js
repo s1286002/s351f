@@ -1,9 +1,9 @@
-const Department = require("@/models/department");
-const Program = require("@/models/program");
-const User = require("@/models/user");
-const Course = require("@/models/course");
-const AcademicRecord = require("@/models/academicRecord");
-const Attendance = require("@/models/attendance");
+const Department = require("./department");
+const Program = require("./program");
+const User = require("./user");
+const Course = require("./course");
+const AcademicRecord = require("./academicRecord");
+const Attendance = require("./attendance");
 
 module.exports = {
   Department,
