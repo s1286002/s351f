@@ -74,8 +74,9 @@ const createErrorResponse = (
  * Factory for creating a handler to get all documents of a model
  * @param {Model} Model - Mongoose model
  * @param {Object} options - Additional options
- * @param {string} options.populateField - Field to populate (e.g., 'department')
- * @param {string} options.populateSelect - Fields to select from populated document
+ * @param {string|Array|Object} options.populate - Field(s) to populate
+ *   Can be a string (simple field name), an array of field names,
+ *   an array of populate objects, or a single populate object
  * @returns {Function} Handler for getting all documents
  */
 const getAll = (Model, options = {}) => {
@@ -96,8 +97,29 @@ const getAll = (Model, options = {}) => {
       const query = Model.find();
 
       // Apply populate if specified
-      if (options.populateField) {
-        query.populate(options.populateField, options.populateSelect || "");
+      if (options.populate) {
+        // Handle different populate formats
+        if (Array.isArray(options.populate)) {
+          // Array of fields or populate objects
+          options.populate.forEach((popOption) => {
+            if (typeof popOption === "string") {
+              // Simple field name
+              query.populate(popOption);
+            } else {
+              // Populate object with options
+              query.populate(popOption);
+            }
+          });
+        } else if (
+          typeof options.populate === "object" &&
+          !Array.isArray(options.populate)
+        ) {
+          // Single populate object with options
+          query.populate(options.populate);
+        } else {
+          // Simple string field name
+          query.populate(options.populate);
+        }
       }
 
       // Apply all query features
@@ -148,14 +170,14 @@ const getAll = (Model, options = {}) => {
  * Factory for creating a handler to get a single document by ID
  * @param {Model} Model - Mongoose model
  * @param {Object} options - Additional options
- * @param {string} options.populateField - Field to populate (e.g., 'department')
- * @param {string} options.populateSelect - Fields to select from populated document
+ * @param {string|Array|Object} options.populate - Field(s) to populate
+ * @param {string} options.select - Fields to select
  * @returns {Function} Handler for getting a document by ID
  */
 const getOne = (Model, options = {}) => {
   return async (request, { params }) => {
     try {
-      const { id } = params;
+      const { id } = await params;
 
       // Validate ID format
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -174,11 +196,29 @@ const getOne = (Model, options = {}) => {
       let query = Model.findById(id);
 
       // Apply populate if specified
-      if (options.populateField) {
-        query = query.populate(
-          options.populateField,
-          options.populateSelect || ""
-        );
+      if (options.populate) {
+        // Handle different populate formats
+        if (Array.isArray(options.populate)) {
+          // Array of fields or populate objects
+          options.populate.forEach((popOption) => {
+            if (typeof popOption === "string") {
+              // Simple field name
+              query.populate(popOption);
+            } else {
+              // Populate object with options
+              query.populate(popOption);
+            }
+          });
+        } else if (
+          typeof options.populate === "object" &&
+          !Array.isArray(options.populate)
+        ) {
+          // Single populate object with options
+          query.populate(options.populate);
+        } else {
+          // Simple string field name
+          query.populate(options.populate);
+        }
       }
 
       // Add field selection if needed
@@ -249,14 +289,13 @@ const createOne = (Model) => {
  * Factory for creating a handler to update a document by ID
  * @param {Model} Model - Mongoose model
  * @param {Object} options - Additional options
- * @param {string} options.populateField - Field to populate in the response
- * @param {string} options.populateSelect - Fields to select from populated document
+ * @param {string|Array|Object} options.populate - Field(s) to populate
  * @returns {Function} Handler for updating a document
  */
 const updateOne = (Model, options = {}) => {
   return async (request, { params }) => {
     try {
-      const { id } = params;
+      const { id } = await params;
 
       // Validate ID format
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -281,11 +320,29 @@ const updateOne = (Model, options = {}) => {
       });
 
       // Apply populate if specified
-      if (options.populateField) {
-        query = query.populate(
-          options.populateField,
-          options.populateSelect || ""
-        );
+      if (options.populate) {
+        // Handle different populate formats
+        if (Array.isArray(options.populate)) {
+          // Array of fields or populate objects
+          options.populate.forEach((popOption) => {
+            if (typeof popOption === "string") {
+              // Simple field name
+              query.populate(popOption);
+            } else {
+              // Populate object with options
+              query.populate(popOption);
+            }
+          });
+        } else if (
+          typeof options.populate === "object" &&
+          !Array.isArray(options.populate)
+        ) {
+          // Single populate object with options
+          query.populate(options.populate);
+        } else {
+          // Simple string field name
+          query.populate(options.populate);
+        }
       }
 
       const document = await query;
@@ -323,7 +380,7 @@ const updateOne = (Model, options = {}) => {
 const deleteOne = (Model) => {
   return async (request, { params }) => {
     try {
-      const { id } = params;
+      const { id } = await params;
 
       // Validate ID format
       if (!mongoose.Types.ObjectId.isValid(id)) {

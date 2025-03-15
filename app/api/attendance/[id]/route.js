@@ -94,135 +94,27 @@ import Attendance from "@/models/attendance";
 import mongoose from "mongoose";
 import factory from "@/utils/handlerFactory";
 
+const populateOptions = [
+  {
+    path: "studentId",
+    select: "username firstName lastName UserId",
+  },
+  {
+    path: "courseId",
+    select: "courseCode title",
+  },
+];
 /**
  * Custom GET handler for a single attendance record with multiple populate fields
  */
-export async function GET(request, { params }) {
-  try {
-    const { id } = params;
-
-    // Validate ID format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid attendance ID format" },
-        { status: 400 }
-      );
-    }
-
-    await connectDB();
-
-    // Query with multiple populate fields
-    const attendance = await Attendance.findById(id)
-      .populate("studentId", "username firstName lastName UserId")
-      .populate("courseId", "courseCode title")
-      .select("-__v");
-
-    if (!attendance) {
-      return NextResponse.json(
-        { success: false, error: "Attendance record not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: true, data: attendance },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(
-      `Error fetching attendance record with ID ${params.id}:`,
-      error
-    );
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch attendance record" },
-      { status: 500 }
-    );
-  }
-}
+export const GET = factory.getOne(Attendance, {
+  populate: populateOptions,
+});
 
 /**
  * Custom PUT handler for updating attendance with multiple populate fields
  */
-export async function PUT(request, { params }) {
-  try {
-    const { id } = params;
-
-    // Validate ID format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid attendance ID format" },
-        { status: 400 }
-      );
-    }
-
-    // Parse the request body
-    const updateData = await request.json();
-
-    await connectDB();
-
-    // Find and update with multiple populate fields
-    const attendance = await Attendance.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    })
-      .populate("studentId", "username firstName lastName UserId")
-      .populate("courseId", "courseCode title");
-
-    if (!attendance) {
-      return NextResponse.json(
-        { success: false, error: "Attendance record not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Attendance record updated successfully",
-        data: attendance,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(
-      `Error updating attendance record with ID ${params.id}:`,
-      error
-    );
-
-    // Handle validation errors
-    if (error.name === "ValidationError") {
-      const validationErrors = Object.values(error.errors).map(
-        (err) => err.message
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Validation failed",
-          details: validationErrors,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Handle duplicate key errors
-    if (error.code === 11000) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Duplicate value error",
-          details: `${Object.keys(error.keyValue)[0]} already exists`,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, error: "Failed to update attendance record" },
-      { status: 500 }
-    );
-  }
-}
+export const PUT = factory.updateOne(Attendance);
 
 // Use factory function for delete operation
 export const DELETE = factory.deleteOne(Attendance);

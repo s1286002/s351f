@@ -91,17 +91,19 @@
 import Program from "@/models/program";
 import factory from "@/utils/handlerFactory";
 
+const populateOptions = [
+  {
+    path: "department",
+    select: "name code",
+  },
+];
 // Get a program by ID
 export const GET = factory.getOne(Program, {
-  populateField: "department",
-  populateSelect: "name code",
+  populate: populateOptions,
 });
 
 // Update a program by ID
-export const PUT = factory.updateOne(Program, {
-  populateField: "department",
-  populateSelect: "name code",
-});
+export const PUT = factory.updateOne(Program);
 
 // Delete a program by ID
 export const DELETE = factory.deleteOne(Program);

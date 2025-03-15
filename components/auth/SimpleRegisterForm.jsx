@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import useDepartments from "@/hooks/api/useDepartments";
 import usePrograms from "@/hooks/api/usePrograms";
+import useMongoError from "@/hooks/useMongoError";
 
 /**
  * Base validation schema for all users
@@ -136,6 +137,9 @@ export default function SimpleRegisterForm() {
     },
   });
 
+  // Use our custom hook for MongoDB error handling
+  const { apiError, processApiResponse, clearErrors } = useMongoError(form);
+
   const currentRole = form.watch("role");
 
   // Handle role change to reset profile data
@@ -171,6 +175,7 @@ export default function SimpleRegisterForm() {
    */
   async function onSubmit(values) {
     setIsLoading(true);
+    clearErrors(); // Clear any previous errors
 
     try {
       // Remove confirm password before sending to API
@@ -185,24 +190,21 @@ export default function SimpleRegisterForm() {
         body: JSON.stringify(dataToSubmit),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
-      }
+      // Process the response and handle errors
+      const data = await processApiResponse(response);
 
       // Show success message and store user ID
       if (data.user && data.user.UserId) {
         setUserId(data.user.UserId);
         setRegistrationSuccess(true);
+        toast.success("Registration successful!");
       } else {
         // If no user ID is returned, just show a success message and redirect
         toast.success("Registration successful!");
         router.push("/auth/login?registered=true");
       }
     } catch (error) {
-      // Show error message
-      toast.error(error.message || "Something went wrong. Please try again.");
+      // Error is already handled by processApiResponse
       console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
@@ -242,6 +244,15 @@ export default function SimpleRegisterForm() {
             Fill in your details to register
           </p>
         </div>
+
+        {/* Display API errors */}
+        {apiError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Registration Error</AlertTitle>
+            <AlertDescription>{apiError.message}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Role Selection Tabs */}
         <FormField

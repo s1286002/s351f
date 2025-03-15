@@ -90,14 +90,24 @@
 import User from "@/models/user";
 import factory from "@/utils/handlerFactory";
 
-// Get all users
-export const GET = factory.getAll(User, {
-  select: "-passwordHash", // Exclude sensitive password hash field
-  populateField: ["profileData.departmentId", "profileData.programId"],
-  populateSelect: {
-    "profileData.departmentId": "name code",
-    "profileData.programId": "name programCode",
+// Define populate options for user routes
+const populateOptions = [
+  {
+    path: "profileData.departmentId",
+    select: "name code",
+    model: "Department",
   },
+  {
+    path: "profileData.programId",
+    select: "name programCode",
+    model: "Program",
+  },
+];
+
+// Get all users using the enhanced factory method
+export const GET = factory.getAll(User, {
+  populate: populateOptions,
+  select: "-passwordHash",
 });
 
 // Create a new user

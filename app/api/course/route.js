@@ -84,10 +84,16 @@
 import Course from "@/models/course";
 import factory from "@/utils/handlerFactory";
 
-// Get all courses
+// Define populate options for course routes
+const populateOptions = [
+  {
+    path: "programIds",
+    select: "name programCode",
+  },
+];
+
 export const GET = factory.getAll(Course, {
-  populateField: "programIds",
-  populateSelect: "name programCode",
+  populate: populateOptions,
 });
 
 // Create a new course

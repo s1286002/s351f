@@ -91,24 +91,29 @@
 import User from "@/models/user";
 import factory from "@/utils/handlerFactory";
 
+const populateOptions = [
+  {
+    path: "profileData.departmentId",
+    select: "name code",
+    model: "Department",
+  },
+  {
+    path: "profileData.programId",
+    select: "name programCode",
+    model: "Program",
+  },
+];
+
 // Get a user by ID
 export const GET = factory.getOne(User, {
+  populate: populateOptions,
   select: "-passwordHash",
-  populateField: ["profileData.departmentId", "profileData.programId"],
-  populateSelect: {
-    "profileData.departmentId": "name code",
-    "profileData.programId": "name programCode",
-  },
 });
 
 // Update a user by ID
 export const PUT = factory.updateOne(User, {
   select: "-passwordHash",
-  populateField: ["profileData.departmentId", "profileData.programId"],
-  populateSelect: {
-    "profileData.departmentId": "name code",
-    "profileData.programId": "name programCode",
-  },
+  populate: populateOptions,
 });
 
 // Delete a user by ID

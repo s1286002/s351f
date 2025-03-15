@@ -91,17 +91,19 @@
 import Course from "@/models/course";
 import factory from "@/utils/handlerFactory";
 
+const populateOptions = [
+  {
+    path: "programIds",
+    select: "name programCode",
+  },
+];
 // Get a course by ID
 export const GET = factory.getOne(Course, {
-  populateField: "programIds",
-  populateSelect: "name programCode",
+  populate: populateOptions,
 });
 
 // Update a course by ID
-export const PUT = factory.updateOne(Course, {
-  populateField: "programIds",
-  populateSelect: "name programCode",
-});
+export const PUT = factory.updateOne(Course);
 
 // Delete a course by ID
 export const DELETE = factory.deleteOne(Course);

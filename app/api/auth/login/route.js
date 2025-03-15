@@ -6,9 +6,8 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/config/database";
 import User from "@/models/user";
-import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
-import { validateUserId } from "../register/route";
+import { validateUserId } from "@/utils/userIdUtils";
+import { createSendToken } from "@/utils/authUtils";
 
 /**
  * POST handler for user login
@@ -68,44 +67,16 @@ export async function POST(request) {
     user.lastLogin = new Date();
     await user.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-        UserId: user.UserId,
-      },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "1d" }
-    );
+    // Create and send JWT token with user data without _id
+    const token = await createSendToken(user);
 
-    // Set the token as an HTTP-only cookie
-    const cookieStore = await cookies();
-    cookieStore.set("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 86400, // 1 day in seconds
-      path: "/",
-    });
-
-    // Don't include password in response
-    const userResponse = {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      UserId: user.UserId,
-      lastLogin: user.lastLogin,
-    };
+    user.passwordHash = undefined;
 
     return NextResponse.json(
       {
         success: true,
         message: "Login successful",
-        user: userResponse,
+        user,
         token,
       },
       { status: 200 }

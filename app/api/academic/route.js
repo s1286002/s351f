@@ -85,76 +85,30 @@
  *         $ref: '#/components/responses/ServerError'
  */
 
-import { NextResponse } from "next/server";
-import connectDB from "@/config/database";
-import AcademicRecord from "@/models/academicRecord";
-import APIFeatures from "@/utils/apiFeatures";
 import factory from "@/utils/handlerFactory";
+import AcademicRecord from "@/models/academicRecord";
+import User from "@/models/user";
+import Course from "@/models/course";
 
 /**
  * Custom GET handler for academic records with multiple populate fields
  */
-export async function GET(request) {
-  try {
-    await connectDB();
 
-    // Get URL for parsing query parameters
-    const url = new URL(request.url);
-    const queryParams = {};
+const populateOptions = [
+  {
+    path: "studentId",
+    select:
+      "username UserId profileData.departmentId profileData.programId profileData.year",
+  },
+  {
+    path: "courseId",
+    select: "courseCode title credits",
+  },
+];
 
-    // Convert URLSearchParams to plain object
-    for (const [key, value] of url.searchParams.entries()) {
-      queryParams[key] = value;
-    }
-
-    // Create base query with multiple populate fields
-    const query = AcademicRecord.find()
-      .populate("studentId", "username firstName lastName UserId")
-      .populate("courseId", "courseCode title credits");
-
-    // Apply all query features
-    const features = new APIFeatures(query, queryParams)
-      .filter()
-      .search()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    // Execute the query
-    const academicRecords = await features.query;
-
-    // Get total count for pagination metadata
-    const totalCount = await features.countDocuments();
-
-    // Calculate pagination metadata
-    const page = parseInt(queryParams.page, 10) || 1;
-    const limit = parseInt(queryParams.limit, 10) || 25;
-    const totalPages = Math.ceil(totalCount / limit);
-
-    return NextResponse.json(
-      {
-        success: true,
-        count: academicRecords.length,
-        pagination: {
-          total: totalCount,
-          page,
-          limit,
-          pages: totalPages,
-          hasNext: page < totalPages,
-          hasPrev: page > 1,
-        },
-        data: academicRecords,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching academic records:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch academic records" },
-      { status: 500 }
-    );
-  }
-}
+export const GET = factory.getAll(AcademicRecord, {
+  populate: populateOptions,
+});
 
 // Create a new academic record
 export const POST = factory.createOne(AcademicRecord);

@@ -126,9 +126,17 @@ import factory from "@/utils/handlerFactory";
  * // Combining multiple features
  * GET /api/program?degreeLevel=bachelor&sort=-credits&page=1&limit=5&fields=name,credits,duration
  */
+
+// Define populate options for program routes
+const populateOptions = [
+  {
+    path: "department",
+    select: "name code",
+  },
+];
+
 export const GET = factory.getAll(Program, {
-  populateField: "department",
-  populateSelect: "name code",
+  populate: populateOptions,
 });
 
 /**

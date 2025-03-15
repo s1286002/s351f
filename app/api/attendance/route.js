@@ -98,76 +98,28 @@
  *         $ref: '#/components/responses/ServerError'
  */
 
-import { NextResponse } from "next/server";
-import connectDB from "@/config/database";
 import Attendance from "@/models/attendance";
-import APIFeatures from "@/utils/apiFeatures";
 import factory from "@/utils/handlerFactory";
 
 /**
  * Custom GET handler for attendance records with multiple populate fields
  */
-export async function GET(request) {
-  try {
-    await connectDB();
 
-    // Get URL for parsing query parameters
-    const url = new URL(request.url);
-    const queryParams = {};
+const populateOptions = [
+  {
+    path: "studentId",
+    select: "username firstName lastName UserId",
+  },
+  {
+    path: "courseId",
+    select: "courseCode title",
+  },
+];
 
-    // Convert URLSearchParams to plain object
-    for (const [key, value] of url.searchParams.entries()) {
-      queryParams[key] = value;
-    }
-
-    // Create base query with multiple populate fields
-    const query = Attendance.find()
-      .populate("studentId", "username firstName lastName UserId")
-      .populate("courseId", "courseCode title");
-
-    // Apply all query features
-    const features = new APIFeatures(query, queryParams)
-      .filter()
-      .search()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    // Execute the query
-    const attendances = await features.query;
-
-    // Get total count for pagination metadata
-    const totalCount = await features.countDocuments();
-
-    // Calculate pagination metadata
-    const page = parseInt(queryParams.page, 10) || 1;
-    const limit = parseInt(queryParams.limit, 10) || 25;
-    const totalPages = Math.ceil(totalCount / limit);
-
-    return NextResponse.json(
-      {
-        success: true,
-        count: attendances.length,
-        pagination: {
-          total: totalCount,
-          page,
-          limit,
-          pages: totalPages,
-          hasNext: page < totalPages,
-          hasPrev: page > 1,
-        },
-        data: attendances,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching attendance records:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch attendance records" },
-      { status: 500 }
-    );
-  }
-}
+// Get all attendance records
+export const GET = factory.getAll(Attendance, {
+  populate: populateOptions,
+});
 
 // Create a new attendance record
 export const POST = factory.createOne(Attendance);

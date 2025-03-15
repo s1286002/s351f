@@ -88,145 +88,32 @@
  *         $ref: '#/components/responses/ServerError'
  */
 
-import { NextResponse } from "next/server";
-import connectDB from "@/config/database";
 import AcademicRecord from "@/models/academicRecord";
-import mongoose from "mongoose";
 import factory from "@/utils/handlerFactory";
+
+const populateOptions = [
+  {
+    path: "studentId",
+    select:
+      "username UserId profileData.departmentId profileData.programId profileData.year",
+  },
+  {
+    path: "courseId",
+    select: "courseCode title credits",
+  },
+];
 
 /**
  * Custom GET handler for a single academic record with multiple populate fields
  */
-export async function GET(request, { params }) {
-  try {
-    const { id } = params;
-
-    // Validate ID format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid academic record ID format" },
-        { status: 400 }
-      );
-    }
-
-    await connectDB();
-
-    // Query with multiple populate fields
-    const academicRecord = await AcademicRecord.findById(id)
-      .populate("studentId", "username firstName lastName UserId")
-      .populate("courseId", "courseCode title credits")
-      .select("-__v");
-
-    if (!academicRecord) {
-      return NextResponse.json(
-        { success: false, error: "Academic record not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: true, data: academicRecord },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(
-      `Error fetching academic record with ID ${params.id}:`,
-      error
-    );
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch academic record" },
-      { status: 500 }
-    );
-  }
-}
+export const GET = factory.getOne(AcademicRecord, {
+  populate: populateOptions,
+});
 
 /**
  * Custom PUT handler for updating academic record with multiple populate fields
  */
-export async function PUT(request, { params }) {
-  try {
-    const { id } = params;
-
-    // Validate ID format
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid academic record ID format" },
-        { status: 400 }
-      );
-    }
-
-    // Parse the request body
-    const updateData = await request.json();
-
-    await connectDB();
-
-    // Find and update with multiple populate fields
-    const academicRecord = await AcademicRecord.findByIdAndUpdate(
-      id,
-      updateData,
-      {
-        new: true, // Return the updated document
-        runValidators: true, // Run model validators
-      }
-    )
-      .populate("studentId", "username firstName lastName UserId")
-      .populate("courseId", "courseCode title credits");
-
-    if (!academicRecord) {
-      return NextResponse.json(
-        { success: false, error: "Academic record not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Academic record updated successfully",
-        data: academicRecord,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(
-      `Error updating academic record with ID ${params.id}:`,
-      error
-    );
-
-    // Handle validation errors
-    if (error.name === "ValidationError") {
-      const validationErrors = Object.values(error.errors).map(
-        (err) => err.message
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Validation failed",
-          details: validationErrors,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Handle duplicate key errors
-    if (error.code === 11000) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Duplicate value error",
-          details: `${Object.keys(error.keyValue)[0]} already exists`,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, error: "Failed to update academic record" },
-      { status: 500 }
-    );
-  }
-}
+export const PUT = factory.updateOne(AcademicRecord);
 
 // Use factory function for delete operation
 export const DELETE = factory.deleteOne(AcademicRecord);
