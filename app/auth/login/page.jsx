@@ -2,6 +2,7 @@
 
 import LoginForm from "@/components/auth/LoginForm";
 import AuthCard from "@/components/auth/AuthCard";
+import { Suspense } from "react";
 
 /**
  * Login page component
@@ -14,7 +15,9 @@ export default function LoginPage() {
         title="Welcome Back"
         description="Enter your credentials to access your account"
       >
-        <LoginForm />
+        <Suspense fallback={<div>Loading...</div>}>
+          <LoginForm />
+        </Suspense>
       </AuthCard>
     </div>
   );
