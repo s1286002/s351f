@@ -113,10 +113,22 @@ export default function SimpleRegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [userId, setUserId] = useState("");
-  const { departments, isLoading: isDepartmentsLoading } = useDepartments();
+
+  // Get departments data
+  const {
+    data: departments = [],
+    isLoading: isDepartmentsLoading,
+    fetchData: fetchDepartments,
+  } = useDepartments();
+
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
-  const { programs, isLoading: isProgramsLoading } =
-    usePrograms(selectedDepartmentId);
+
+  // Get programs data
+  const {
+    data: programs = [],
+    isLoading: isProgramsLoading,
+    fetchData: fetchPrograms,
+  } = usePrograms();
 
   // Initialize form with react-hook-form and zod validation
   const form = useForm({
@@ -141,6 +153,26 @@ export default function SimpleRegisterForm() {
   const { apiError, processApiResponse, clearErrors } = useMongoError(form);
 
   const currentRole = form.watch("role");
+
+  // Fetch departments on component mount
+  useEffect(() => {
+    fetchDepartments({
+      limit: 100, // Fetch reasonable number of departments for dropdown
+      sort: "name", // Sort by name for easier selection
+    });
+  }, [fetchDepartments]);
+
+  // Fetch programs filtered by department when department changes
+  useEffect(() => {
+    if (selectedDepartmentId) {
+      console.log("Fetching programs for department:", selectedDepartmentId);
+      fetchPrograms({
+        limit: 100,
+        sort: "name",
+        department: selectedDepartmentId, // Filter programs by department
+      });
+    }
+  }, [selectedDepartmentId, fetchPrograms]);
 
   // Handle role change to reset profile data
   useEffect(() => {

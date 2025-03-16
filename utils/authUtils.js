@@ -7,8 +7,10 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { getUpdatableFields, hasResourcePermission } from "./rbacUtils";
-import User from "@/models/user";
 import connectDB from "@/config/database";
+import User from "@/models/user";
+import Program from "@/models/program"; // for student
+import Department from "@/models/department"; // for student
 
 /**
  * Filter an object to only include specified fields

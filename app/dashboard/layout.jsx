@@ -53,9 +53,13 @@ function DashboardContent({ children }) {
         },
       ],
       teacher: [
-        { name: "Courses", href: "/dashboard/courses", icon: BookOpen },
-        { name: "Grading", href: "/dashboard/grading", icon: FileText },
-        { name: "Students", href: "/dashboard/students", icon: Users },
+        { name: "Courses", href: "/dashboard/teacher/course", icon: BookOpen },
+        { name: "Grading", href: "/dashboard/teacher/grading", icon: FileText },
+        {
+          name: "Attendance",
+          href: "/dashboard/teacher/attendance",
+          icon: Users,
+        },
       ],
       admin: [
         {
@@ -87,7 +91,7 @@ function DashboardContent({ children }) {
             },
             {
               name: "Academic Records",
-              href: "/dashboard/data/academic-records",
+              href: "/dashboard/data/academic",
               icon: ClipboardList,
             },
             {
