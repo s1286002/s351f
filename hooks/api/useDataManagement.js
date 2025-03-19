@@ -301,38 +301,48 @@ export default function useDataManagement(endpoint) {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`${endpoint}/bulk-delete`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ids }),
-        });
+        let successCount = 0;
+        let failureCount = 0;
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
+        // Process deletions sequentially
+        for (const id of ids) {
+          try {
+            const result = await deleteItem(id);
+            if (result.success) {
+              successCount++;
+            } else {
+              failureCount++;
+            }
+          } catch (err) {
+            console.error(`Error deleting item ${id}:`, err);
+            failureCount++;
+          }
         }
 
-        const result = await response.json();
-
-        if (result.success) {
-          toast.success(`${ids.length} items deleted successfully`);
-          // Refresh data
-          fetchData();
-          return { success: true };
-        } else {
-          throw new Error(result.error || "Unknown error occurred");
+        // Show summary toast
+        if (successCount > 0) {
+          toast.success(`Successfully deleted ${successCount} items`);
         }
+        if (failureCount > 0) {
+          toast.error(`Failed to delete ${failureCount} items`);
+        }
+
+        // Refresh data once after all deletions
+        await fetchData();
+
+        return {
+          success: true,
+          summary: { successful: successCount, failed: failureCount },
+        };
       } catch (err) {
-        console.error("Error deleting items:", err);
-        setError(err.message || "Failed to delete items");
-        toast.error(`Failed to delete items: ${err.message}`);
+        console.error("Error in bulk delete operation:", err);
+        setError(err.message || "Failed to complete bulk delete operation");
         return { success: false, error: err.message };
       } finally {
         setIsLoading(false);
       }
     },
-    [endpoint, fetchData]
+    [deleteItem, fetchData]
   );
 
   return {
