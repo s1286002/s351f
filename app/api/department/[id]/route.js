@@ -117,5 +117,7 @@ export const GET = factory.getOne(Department);
 // Update a department by ID
 export const PUT = factory.updateOne(Department);
 
+export const POST = PUT;
+
 // Delete a department by ID
 export const DELETE = factory.deleteOne(Department);

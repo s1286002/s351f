@@ -502,9 +502,81 @@ export default function AcademicRecordsPage() {
           onClose={() => setViewModalOpen(false)}
           initialData={viewRecordData}
           fields={getAcademicRecordFormFields()}
-          onSubmit={() => setViewModalOpen(false)}
-          isSubmitting={false}
-          readOnly={true}
+          onSubmit={(data) => {
+            // Format the data - ensure IDs are extracted from objects if needed
+            const formattedData = { ...data };
+
+            // Handle studentId - ensure it's just the ID
+            if (
+              formattedData.studentId &&
+              typeof formattedData.studentId === "object"
+            ) {
+              formattedData.studentId =
+                formattedData.studentId._id ||
+                formattedData.studentId.id ||
+                formattedData.studentId.value ||
+                formattedData.studentId;
+            }
+
+            // Handle courseId - ensure it's just the ID
+            if (
+              formattedData.courseId &&
+              typeof formattedData.courseId === "object"
+            ) {
+              formattedData.courseId =
+                formattedData.courseId._id ||
+                formattedData.courseId.id ||
+                formattedData.courseId.value ||
+                formattedData.courseId;
+            }
+
+            // Format nested grade object if needed
+            if (formattedData.grade) {
+              // Ensure grade has proper structure
+              formattedData.grade = {
+                midterm:
+                  formattedData.grade.midterm !== undefined
+                    ? Number(formattedData.grade.midterm)
+                    : undefined,
+                final:
+                  formattedData.grade.final !== undefined
+                    ? Number(formattedData.grade.final)
+                    : undefined,
+                totalScore:
+                  formattedData.grade.totalScore !== undefined
+                    ? Number(formattedData.grade.totalScore)
+                    : undefined,
+                letterGrade: formattedData.grade.letterGrade || undefined,
+                assignments: formattedData.grade.assignments || [],
+              };
+            }
+
+            // Use the same function as the edit modal but with viewRecordData
+            setIsSubmitting(true);
+            updateAcademicRecord(viewRecordData._id, formattedData)
+              .then(() => {
+                toast.success("Academic record updated successfully");
+                setViewModalOpen(false);
+
+                // Refetch academic records with current parameters
+                const sortParam =
+                  sortOrder === "desc" ? `-${sortField}` : sortField;
+                return fetchAcademicRecords({
+                  page: currentPage,
+                  limit: pageSize,
+                  sort: sortParam,
+                  search: searchTerm,
+                  ...selectedFilters,
+                });
+              })
+              .catch((error) => {
+                toast.error(error.message || "An error occurred");
+              })
+              .finally(() => {
+                setIsSubmitting(false);
+              });
+          }}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

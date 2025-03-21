@@ -168,13 +168,45 @@ export default function useUsers() {
             type: "select",
             optionsEndpoint: "/api/department",
             required: true,
+            onChange: (value, form) => {
+              // Only reset program value if department actually changed
+              const currentProgramValue = form.getValues(
+                "profileData.programId"
+              );
+              const currentDeptValue = form.getValues(
+                "profileData.departmentId"
+              );
+
+              if (value !== currentDeptValue && currentProgramValue) {
+                form.setValue("profileData.programId", "");
+              }
+            },
           },
           {
             name: "profileData.programId",
             label: "Program",
             type: "select",
-            optionsEndpoint: "/api/program",
+            optionsEndpoint: (formValues) => {
+              const departmentId = formValues?.profileData?.departmentId;
+              return departmentId
+                ? `/api/program?department=${departmentId}`
+                : "/api/program";
+            },
             required: true,
+            dependsOn: "profileData.departmentId",
+          },
+          {
+            name: "profileData.year",
+            label: "Year",
+            type: "number",
+            required: true,
+            placeholder: "Enter current year",
+            validation: {
+              min: {
+                value: 1,
+                message: "Year must be at least 1",
+              },
+            },
           },
         ];
       default:

@@ -494,9 +494,68 @@ export default function AttendancePage() {
           onClose={() => setViewModalOpen(false)}
           initialData={viewAttendanceData}
           fields={getAttendanceFormFields()}
-          onSubmit={() => setViewModalOpen(false)}
-          isSubmitting={false}
-          readOnly={true}
+          onSubmit={(data) => {
+            // Format the data - ensure IDs are extracted from objects if needed
+            const formattedData = { ...data };
+
+            // Handle studentId - ensure it's just the ID
+            if (
+              formattedData.studentId &&
+              typeof formattedData.studentId === "object"
+            ) {
+              formattedData.studentId =
+                formattedData.studentId._id ||
+                formattedData.studentId.id ||
+                formattedData.studentId.value ||
+                formattedData.studentId;
+            }
+
+            // Handle courseId - ensure it's just the ID
+            if (
+              formattedData.courseId &&
+              typeof formattedData.courseId === "object"
+            ) {
+              formattedData.courseId =
+                formattedData.courseId._id ||
+                formattedData.courseId.id ||
+                formattedData.courseId.value ||
+                formattedData.courseId;
+            }
+
+            // Format date if needed
+            if (formattedData.date && typeof formattedData.date === "object") {
+              // Handle Date object or other non-string date format
+              formattedData.date = formattedData.date.toISOString
+                ? formattedData.date.toISOString().split("T")[0]
+                : formattedData.date;
+            }
+
+            // Use the same function as the edit modal but with viewAttendanceData
+            setIsSubmitting(true);
+            updateAttendance(viewAttendanceData._id, formattedData)
+              .then(() => {
+                toast.success("Attendance record updated successfully");
+                setViewModalOpen(false);
+
+                // Refetch attendance records with current parameters
+                const sortParam =
+                  sortOrder === "desc" ? `-${sortField}` : sortField;
+                return fetchAttendance({
+                  page: currentPage,
+                  limit: pageSize,
+                  sort: sortParam,
+                  search: searchTerm,
+                  ...selectedFilters,
+                });
+              })
+              .catch((error) => {
+                toast.error(error.message || "An error occurred");
+              })
+              .finally(() => {
+                setIsSubmitting(false);
+              });
+          }}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

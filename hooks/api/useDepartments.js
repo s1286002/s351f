@@ -176,7 +176,7 @@ export default function useDepartments() {
         label: "Department Code",
         type: "text",
         required: true,
-        placeholder: "Enter department code (e.g., D12345678)",
+        placeholder: "D12345678",
         validation: {
           pattern: {
             value: /^D\d{8}$/,

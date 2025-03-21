@@ -479,9 +479,63 @@ export default function CoursesPage() {
           onClose={() => setViewModalOpen(false)}
           initialData={viewCourseData}
           fields={getCourseFormFields()}
-          onSubmit={() => setViewModalOpen(false)}
-          isSubmitting={false}
-          readOnly={true}
+          onSubmit={(data) => {
+            // Format the data - transform arrays to correct format if needed
+            const formattedData = { ...data };
+
+            // Handle programs selection - ensure it's an array of IDs
+            if (
+              Array.isArray(formattedData.programIds) &&
+              formattedData.programIds.length > 0
+            ) {
+              // If programIds contains objects, extract just the IDs
+              if (typeof formattedData.programIds[0] === "object") {
+                formattedData.programIds = formattedData.programIds.map(
+                  (program) =>
+                    program._id || program.id || program.value || program
+                );
+              }
+            }
+
+            // Handle prerequisites - ensure it's an array of IDs
+            if (
+              Array.isArray(formattedData.prerequisites) &&
+              formattedData.prerequisites.length > 0
+            ) {
+              // If prerequisites contains objects, extract just the IDs
+              if (typeof formattedData.prerequisites[0] === "object") {
+                formattedData.prerequisites = formattedData.prerequisites.map(
+                  (prereq) => prereq._id || prereq.id || prereq.value || prereq
+                );
+              }
+            }
+
+            // Use the same function as the edit modal but with viewCourseData
+            setIsSubmitting(true);
+            updateCourse(viewCourseData._id, formattedData)
+              .then(() => {
+                toast.success("Course updated successfully");
+                setViewModalOpen(false);
+
+                // Refetch courses with current parameters
+                const sortParam =
+                  sortOrder === "desc" ? `-${sortField}` : sortField;
+                return fetchCourses({
+                  page: currentPage,
+                  limit: pageSize,
+                  sort: sortParam,
+                  search: searchTerm,
+                  ...selectedFilters,
+                });
+              })
+              .catch((error) => {
+                toast.error(error.message || "An error occurred");
+              })
+              .finally(() => {
+                setIsSubmitting(false);
+              });
+          }}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

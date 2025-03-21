@@ -450,9 +450,33 @@ export default function ProgramsPage() {
           onClose={() => setViewModalOpen(false)}
           initialData={viewProgramData}
           fields={getProgramFormFields()}
-          onSubmit={() => setViewModalOpen(false)}
-          isSubmitting={false}
-          readOnly={true}
+          onSubmit={(data) => {
+            // Use the same function as the edit modal but with viewProgramData
+            setIsSubmitting(true);
+            updateProgram(viewProgramData._id, data)
+              .then(() => {
+                toast.success("Program updated successfully");
+                setViewModalOpen(false);
+
+                // Refetch programs with current parameters
+                const sortParam =
+                  sortOrder === "desc" ? `-${sortField}` : sortField;
+                return fetchPrograms({
+                  page: currentPage,
+                  limit: pageSize,
+                  sort: sortParam,
+                  search: searchTerm,
+                  ...selectedFilters,
+                });
+              })
+              .catch((error) => {
+                toast.error(error.message || "An error occurred");
+              })
+              .finally(() => {
+                setIsSubmitting(false);
+              });
+          }}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

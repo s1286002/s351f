@@ -295,6 +295,7 @@ export default function DepartmentsPage() {
     try {
       if (currentDepartment) {
         // Update existing department
+        console.log("Updating department:", data);
         await updateDepartment(currentDepartment._id, data);
         toast.success("Department updated successfully");
       } else {
@@ -455,9 +456,33 @@ export default function DepartmentsPage() {
           onClose={() => setViewModalOpen(false)}
           initialData={viewDepartmentData}
           fields={getDepartmentFormFields()}
-          onSubmit={() => setViewModalOpen(false)}
-          isSubmitting={false}
-          readOnly={true}
+          onSubmit={(data) => {
+            // Use the same function as the edit modal but with viewDepartmentData
+            setIsSubmitting(true);
+            updateDepartment(viewDepartmentData._id, data)
+              .then(() => {
+                toast.success("Department updated successfully");
+                setViewModalOpen(false);
+
+                // Refetch departments with current parameters
+                const sortParam =
+                  sortOrder === "desc" ? `-${sortField}` : sortField;
+                return fetchDepartments({
+                  page: currentPage,
+                  limit: pageSize,
+                  sort: sortParam,
+                  search: searchTerm,
+                  ...selectedFilters,
+                });
+              })
+              .catch((error) => {
+                toast.error(error.message || "An error occurred");
+              })
+              .finally(() => {
+                setIsSubmitting(false);
+              });
+          }}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

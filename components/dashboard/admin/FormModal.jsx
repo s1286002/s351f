@@ -53,6 +53,8 @@ export default function FormModal({
   isSubmitting = false,
 }) {
   const [externalOptions, setExternalOptions] = useState({});
+  // Track fields that need to be refreshed when their dependencies change
+  const [fieldsToRefresh, setFieldsToRefresh] = useState([]);
 
   const form = useForm({
     defaultValues: initialData || {},
@@ -64,10 +66,88 @@ export default function FormModal({
       // Convert nested properties (e.g. user.name) to object structure
       const formattedData = { ...initialData };
 
+      // Handle nested field paths in initialData
+      fields.forEach((field) => {
+        if (field.name.includes(".")) {
+          const parts = field.name.split(".");
+          let current = initialData;
+
+          // Navigate through the nested structure
+          for (let i = 0; i < parts.length - 1; i++) {
+            current = current?.[parts[i]] || {};
+          }
+
+          // Get the value from the nested property if it exists
+          const value = current?.[parts[parts.length - 1]];
+
+          // Set the value in the form if it exists
+          if (value !== undefined) {
+            form.setValue(field.name, value);
+          }
+        }
+      });
+
       // Reset form with the new values
       form.reset(formattedData);
     }
-  }, [initialData, form]);
+  }, [initialData, form, fields]);
+
+  /**
+   * Refresh options for a specific field
+   * @param {string} fieldName - Name of field to refresh options for
+   */
+  const refreshFieldOptions = async (fieldName) => {
+    const field = fields.find((f) => f.name === fieldName);
+    if (!field || !field.optionsEndpoint) return;
+
+    try {
+      const formValues = form.getValues();
+
+      // Determine endpoint - either static string or function that returns endpoint based on form values
+      let endpoint = field.optionsEndpoint;
+      if (typeof endpoint === "function") {
+        endpoint = endpoint(formValues);
+      }
+
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch options: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        // Determine label and value keys from field or use defaults
+        const labelKey = field.optionLabelKey || "name";
+        const valueKey = field.optionValueKey || "_id";
+
+        // Format options for select
+        const options = result.data.map((item) => ({
+          label:
+            typeof labelKey === "function" ? labelKey(item) : item[labelKey],
+          value: item[valueKey],
+        }));
+
+        setExternalOptions((prev) => ({
+          ...prev,
+          [field.name]: options,
+        }));
+      }
+    } catch (error) {
+      console.error(`Error refreshing options for ${field.name}:`, error);
+    }
+  };
+
+  // Find fields with dependencies when fields array changes
+  useEffect(() => {
+    const dependentFields = fields
+      .filter((field) => field.dependsOn)
+      .map((field) => ({
+        name: field.name,
+        dependsOn: field.dependsOn,
+      }));
+
+    setFieldsToRefresh(dependentFields);
+  }, [fields]);
 
   // Fetch options for select fields from external endpoints
   useEffect(() => {
@@ -76,13 +156,22 @@ export default function FormModal({
       const fieldsWithExternalOptions = fields.filter(
         (field) =>
           (field.type === "select" || field.type === "multiselect") &&
-          field.optionsEndpoint
+          (field.optionsEndpoint || typeof field.optionsEndpoint === "function")
       );
 
       // Fetch options for each field
       const optionsPromises = fieldsWithExternalOptions.map(async (field) => {
         try {
-          const response = await fetch(field.optionsEndpoint);
+          // Get the current form values to pass to dynamic endpoints
+          const formValues = form.getValues();
+
+          // Determine endpoint - either static string or function that returns endpoint based on form values
+          let endpoint = field.optionsEndpoint;
+          if (typeof endpoint === "function") {
+            endpoint = endpoint(formValues);
+          }
+
+          const response = await fetch(endpoint);
           if (!response.ok) {
             throw new Error(`Failed to fetch options: ${response.status}`);
           }
@@ -126,7 +215,7 @@ export default function FormModal({
     if (isOpen) {
       fetchOptions();
     }
-  }, [fields, isOpen]);
+  }, [fields, isOpen, form]);
 
   /**
    * Get the value from a nested object path
@@ -213,9 +302,31 @@ export default function FormModal({
             </Label>
             <Select
               value={fieldValue || ""}
-              onValueChange={(value) =>
-                form.setValue(name, value, { shouldValidate: true })
-              }
+              onValueChange={(value) => {
+                // Preserve the current value
+                const currentValue = form.getValues(name);
+
+                // Only update if the value has changed
+                if (value !== currentValue) {
+                  form.setValue(name, value, { shouldValidate: true });
+
+                  // Call onChange handler if provided
+                  if (field.onChange && typeof field.onChange === "function") {
+                    field.onChange(value, form);
+                  }
+
+                  // Check if any fields depend on this field and refresh them
+                  const dependentFields = fieldsToRefresh
+                    .filter((f) => f.dependsOn === name)
+                    .map((f) => f.name);
+
+                  if (dependentFields.length > 0) {
+                    dependentFields.forEach((fieldName) => {
+                      refreshFieldOptions(fieldName);
+                    });
+                  }
+                }
+              }}
             >
               <SelectTrigger
                 id={name}
@@ -317,6 +428,7 @@ export default function FormModal({
               <PopoverTrigger asChild>
                 <Button
                   id={name}
+                  type="button"
                   variant="outline"
                   className={`w-full justify-start text-left font-normal ${
                     hasError ? "border-destructive" : ""
@@ -332,15 +444,26 @@ export default function FormModal({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={fieldValue ? new Date(fieldValue) : undefined}
-                  onSelect={(date) =>
-                    form.setValue(name, date ? date.toISOString() : "", {
-                      shouldValidate: true,
-                    })
-                  }
+                  onSelect={(date) => {
+                    if (date) {
+                      // Format date as ISO string
+                      const isoDate = date.toISOString();
+                      form.setValue(name, isoDate, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    } else {
+                      form.setValue(name, "", {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }
+                  }}
+                  disabled={(date) => false} // Allow all dates
                   initialFocus
                 />
               </PopoverContent>
@@ -414,7 +537,16 @@ export default function FormModal({
               type={type}
               placeholder={placeholder}
               className={hasError ? "border-destructive" : ""}
-              {...form.register(name, validationRules)}
+              {...(type === "number"
+                ? {
+                    ...form.register(name, {
+                      ...validationRules,
+                      valueAsNumber: true, // Convert to number
+                    }),
+                    min: rest.validation?.min?.value || 0,
+                    step: rest.step || 1,
+                  }
+                : form.register(name, validationRules))}
             />
             {hasError && (
               <p className="text-sm text-destructive">{errorMessage}</p>
@@ -426,7 +558,7 @@ export default function FormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

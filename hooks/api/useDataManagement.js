@@ -216,7 +216,7 @@ export default function useDataManagement(endpoint) {
         setError(null);
 
         const response = await fetch(`${endpoint}/${id}`, {
-          method: "PATCH",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },

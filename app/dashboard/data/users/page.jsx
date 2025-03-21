@@ -74,6 +74,26 @@ export default function UsersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentRole, setCurrentRole] = useState("");
+
+  // Watch for role changes to update form fields
+  useEffect(() => {
+    if (currentUser) {
+      setCurrentRole(currentUser.role || "");
+    } else {
+      setCurrentRole("");
+    }
+  }, [currentUser]);
+
+  // Update form fields when role changes
+  useEffect(() => {
+    // Only update when modal is open
+    if (!modalOpen) return;
+
+    // We don't need to do anything here, the fields will update
+    // when getFormFields is called with the new currentRole
+    console.log("Role changed to:", currentRole);
+  }, [currentRole, modalOpen]);
 
   // Get user data and operations from hook
   const {
@@ -269,13 +289,33 @@ export default function UsersPage() {
     setIsSubmitting(true);
 
     try {
+      // Prepare data - ensure profileData is properly structured
+      const formattedData = { ...data };
+
+      // Process form data to properly structure the profileData
+      const profileFields = {};
+
+      // Extract profile fields from flat form data structure
+      Object.keys(data).forEach((key) => {
+        if (key.startsWith("profileData.")) {
+          const fieldName = key.split("profileData.")[1];
+          profileFields[fieldName] = data[key];
+          delete formattedData[key]; // Remove the flat key
+        }
+      });
+
+      // If we have any profile fields, add them as a profileData object
+      if (Object.keys(profileFields).length > 0) {
+        formattedData.profileData = profileFields;
+      }
+
       if (currentUser) {
         // Update existing user
-        await updateUser(currentUser._id, data);
+        await updateUser(currentUser._id, formattedData);
         toast.success("User updated successfully");
       } else {
         // Create new user
-        await createUser(data);
+        await createUser(formattedData);
         toast.success("User created successfully");
       }
 
@@ -383,6 +423,29 @@ export default function UsersPage() {
         },
       },
       {
+        name: "UserId",
+        label: "User ID",
+        type: "text",
+        required: true,
+        placeholder: currentRole
+          ? `${
+              currentRole === "admin"
+                ? "A"
+                : currentRole === "teacher"
+                ? "T"
+                : "S"
+            }0000000`
+          : "Enter User ID",
+        validation: {
+          pattern: {
+            // Should be A/T/S + 7 digits based on role
+            value: /^[ATS]\d{7}$/,
+            message:
+              "Invalid User ID format. Must start with A/T/S followed by 7 digits",
+          },
+        },
+      },
+      {
         name: "firstName",
         label: "First Name",
         type: "text",
@@ -406,6 +469,12 @@ export default function UsersPage() {
           { label: "Teacher", value: "teacher" },
           { label: "Student", value: "student" },
         ],
+        onChange: (value) => {
+          // Only update if the value actually changed
+          if (value !== currentRole) {
+            setCurrentRole(value);
+          }
+        },
       },
       {
         name: "status",
@@ -423,7 +492,7 @@ export default function UsersPage() {
     // Add password field for new users
     if (!currentUser) {
       baseFields.push({
-        name: "password",
+        name: "passwordHash",
         label: "Password",
         type: "password",
         required: true,
@@ -438,9 +507,7 @@ export default function UsersPage() {
     }
 
     // Get role-specific fields based on the selected role
-    const roleSpecificFields = getRoleSpecificFormFields(
-      currentUser?.role || ""
-    );
+    const roleSpecificFields = getRoleSpecificFormFields(currentRole);
 
     return [...baseFields, ...roleSpecificFields];
   };
@@ -508,6 +575,7 @@ export default function UsersPage() {
         fields={getFormFields()}
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting}
+        key={`user-form-${currentUser ? currentUser._id : "new"}`}
       />
     </div>
   );
